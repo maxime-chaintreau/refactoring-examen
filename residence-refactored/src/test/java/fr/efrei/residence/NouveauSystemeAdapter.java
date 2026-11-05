@@ -30,22 +30,32 @@ import java.util.EnumSet;
  */
 public class NouveauSystemeAdapter implements SystemeResidence {
 
-    private GestionResidence gestion;
+    private Residence residence;
+    private Database db;
+    private EmailService email;
+    private SmsService sms;
+    private CourrierService courrier;
+    private CalculateurLoyer calculateur;
+    private GenerateurQuittance quittances;
+private GestionResidence gestion;
 
     @Override
     public void reinitialiser() {
-        Database.getInstance();
-        Database.etudiants.clear();
-        Database.baux.clear();
-        EmailService.journal.clear();
-        SmsService.journal.clear();
-        CourrierService.journal.clear();
-        SmsService.compteurSms = 0;
-        CourrierService.totalAffranchissement = 0;
-        Etudiant.compteur = 0;
-        GestionResidence.compteurBail = 0;
-        Residence.initialiser();
-        gestion = new GestionResidence();
+        residence = new Residence();
+        db = new Database();
+        email = new EmailService();
+        sms = new SmsService();
+        courrier = new CourrierService();
+        calculateur = new CalculateurLoyer();
+        quittances = new GenerateurQuittance();
+        ServiceNotification notifications = new ServiceNotification(
+                new NotificationEmail(email), new NotificationSms(sms), new NotificationCourrier(courrier));
+        gestion = new GestionResidence(
+                new ServiceInscription(db),
+                new ServiceParc(residence),
+                new ServiceAttribution(residence, db, calculateur, notifications),
+                new ServiceBail(db, notifications),
+                new ServiceRapport(residence, db, sms, courrier));
     }
 
     @Override
@@ -63,7 +73,7 @@ public class NouveauSystemeAdapter implements SystemeResidence {
 
     @Override
     public Optional<EtatLogement> logement(String numero) {
-        Logement l = Residence.trouver(numero);
+        Logement l = residence.trouver(numero);
         if (l == null) {
             return Optional.empty();
         }
@@ -79,16 +89,16 @@ public class NouveauSystemeAdapter implements SystemeResidence {
 
     @Override
     public OptionalDouble devisLoyer(DemandeDevis d) {
-        Logement l = Residence.trouver(d.numeroLogement());
+        Logement l = residence.trouver(d.numeroLogement());
         if (l == null) {
             return OptionalDouble.empty();
         }
-        return OptionalDouble.of(new CalculateurLoyer().calculerLoyer(l, versProfil(d.profil()), d.echelonBourse(), versOptions(d.options())));
+        return OptionalDouble.of(calculateur.calculerLoyer(l, versProfil(d.profil()), d.echelonBourse(), versOptions(d.options())));
     }
 
     @Override
     public Optional<String> attribuer(DemandeAttribution d) {
-        Etudiant e = etudiant(d.refEtudiant());
+        Etudiant e = db.trouverParId(d.refEtudiant());
         if (e == null) {
             return Optional.empty();
         }
@@ -98,7 +108,7 @@ public class NouveauSystemeAdapter implements SystemeResidence {
 
     @Override
     public Optional<EtatBail> consulter(String idBail) {
-        Bail b = Database.baux.get(idBail);
+        Bail b = db.trouver(idBail);
         if (b == null) {
             return Optional.empty();
         }
@@ -134,7 +144,7 @@ public class NouveauSystemeAdapter implements SystemeResidence {
 
     @Override
     public Optional<String> quittance(String idBail, YearMonth mois) {
-        return Optional.ofNullable(Database.baux.get(idBail)).map(b -> b.genererQuittance(mois.toString()));
+        return Optional.ofNullable(db.trouver(idBail)).map(b -> quittances.generer(b, mois.toString()));
     }
 
     @Override
@@ -150,14 +160,14 @@ public class NouveauSystemeAdapter implements SystemeResidence {
     @Override
     public List<Notification> notifications() {
         List<Notification> notifications = new ArrayList<>();
-        for (String[] email : EmailService.journal) {
-            notifications.add(new Notification(Canal.EMAIL, email[0], email[1]));
+        for (String[] mail : email.getJournal()) {
+            notifications.add(new Notification(Canal.EMAIL, mail[0], mail[1]));
         }
-        for (String[] sms : SmsService.journal) {
-            notifications.add(new Notification(Canal.SMS, sms[0], sms[1]));
+        for (String[] texto : sms.getJournal()) {
+            notifications.add(new Notification(Canal.SMS, texto[0], texto[1]));
         }
-        for (String[] courrier : CourrierService.journal) {
-            notifications.add(new Notification(Canal.COURRIER, courrier[0], courrier[1]));
+        for (String[] lettre : courrier.getJournal()) {
+            notifications.add(new Notification(Canal.COURRIER, lettre[0], lettre[1]));
         }
         return notifications;
     }
@@ -176,12 +186,5 @@ public class NouveauSystemeAdapter implements SystemeResidence {
 
     private static fr.efrei.residence.TypeLogement versType(TypeLogement t) {
         return fr.efrei.residence.TypeLogement.valueOf(t.name());
-    }
-
-    private static Etudiant etudiant(String ref) {
-        for (Etudiant e : Database.etudiants.values()) {
-            if (e.getId().equals(ref)) return e;
-        }
-        return null;
     }
 }
