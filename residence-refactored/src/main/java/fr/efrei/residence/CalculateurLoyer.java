@@ -1,39 +1,30 @@
 package fr.efrei.residence;
 
+import java.util.Set;
+
 public class CalculateurLoyer {
 
-    static final double COEF_MEUBLE = 1.15;
-    static final double COEF_REZ_DE_CHAUSSEE = 0.95;
+    public Loyer construire(Logement l, Profil profil, int echelon, Set<Option> options) {
+        TarifLogement tarif = TarifLogement.pour(l.getType());
 
-    static final double PRIX_PARKING = 45;
-    static final double PRIX_LAVERIE = 12;
-    static final double PRIX_FIBRE = 20;
-    static final double PRIX_ASSURANCE = 9;
+        Loyer loyer = new LoyerDeBase(l);
+        if (l.isMeuble()) loyer = new MajorationMeuble(loyer);
+        if (l.getEtage() == Logement.ETAGE_REZ_DE_CHAUSSEE) loyer = new MinorationRezDeChaussee(loyer);
+
+        if (options.contains(Option.MENAGE)) loyer = new OptionMenage(loyer, tarif.coefMenage());
+        if (options.contains(Option.PARKING)) loyer = new OptionParking(loyer);
+        if (options.contains(Option.LAVERIE)) loyer = new OptionLaverie(loyer);
+        if (options.contains(Option.FIBRE) && !tarif.fibreIncluse()) loyer = new OptionFibre(loyer);
+        if (options.contains(Option.ASSURANCE)) loyer = new OptionAssurance(loyer);
+
+        return new RemiseProfil(loyer, RegleProfil.pour(profil).tauxRemise(echelon));
+    }
 
     /**
      * Loyer mensuel hors charges, options comprises, remise déduite.
      */
-    public double calculerLoyer(Logement l, Profil profil, int echelon, boolean parking, boolean menage,
-                                boolean laverie, boolean fibre, boolean assurance) {
-        TarifLogement tarif = TarifLogement.pour(l.getType());
-        RegleProfil regle = RegleProfil.pour(profil);
-
-        double loyer = tarif.loyerDeBase(l);
-
-        if (l.isMeuble()) loyer = loyer * COEF_MEUBLE;
-        if (l.getEtage() == Logement.ETAGE_REZ_DE_CHAUSSEE) loyer = loyer * COEF_REZ_DE_CHAUSSEE;
-
-        // options
-        if (menage) loyer = loyer * tarif.coefMenage();
-        if (parking) loyer = loyer + PRIX_PARKING;
-        if (laverie) loyer = loyer + PRIX_LAVERIE;
-        if (fibre && !tarif.fibreIncluse()) loyer = loyer + PRIX_FIBRE;
-        if (assurance) loyer = loyer + PRIX_ASSURANCE;
-
-        // remise selon le profil
-        loyer = loyer * (1 - regle.tauxRemise(echelon));
-
-        return Utils.arrondir(loyer);
+    public double calculerLoyer(Logement l, Profil profil, int echelon, Set<Option> options) {
+        return Utils.arrondir(construire(l, profil, echelon, options).montant());
     }
 
     public double calculerCharges(Logement l) {

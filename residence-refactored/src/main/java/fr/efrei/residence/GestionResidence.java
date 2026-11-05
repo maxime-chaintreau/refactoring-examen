@@ -5,6 +5,7 @@ import java.time.YearMonth;
 import java.util.List;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.Optional;
 
 /**
@@ -76,8 +77,7 @@ public class GestionResidence {
 
     // ------------------------------------------------------------------ attribution
 
-    public Bail attribuerLogement(Etudiant e, TypeLogement typeSouhaite, boolean parking, boolean menage, boolean laverie,
-                                  boolean fibre, boolean assurance, LocalDate dateSignature) {
+    public Bail attribuerLogement(Etudiant e, TypeLogement typeSouhaite, Set<Option> options, LocalDate dateSignature) {
         System.out.println("--- Attribution d'un " + typeSouhaite + " à " + e.getNomComplet());
         RegleProfil regle = RegleProfil.pour(e.getProfil());
         Logement choisi = null;
@@ -88,8 +88,7 @@ public class GestionResidence {
             if (!l.estLibre()) continue;
             if (e.isPmr() && !l.estAccessiblePMR()) continue;
 
-            double loyerCandidat = calculateur.calculerLoyer(l, e.getProfil(), e.getEchelonBourse(), parking, menage,
-                    laverie, fibre, assurance);
+            double loyerCandidat = calculateur.calculerLoyer(l, e.getProfil(), e.getEchelonBourse(), options);
             double chargesCandidat = calculateur.calculerCharges(l);
             double total = loyerCandidat + chargesCandidat;
 
@@ -117,11 +116,7 @@ public class GestionResidence {
         compteurBail++;
         String id = String.format(FORMAT_ID_BAIL, compteurBail);
         Bail b = new Bail(id, e, choisi, dateSignature);
-        b.parking = parking;
-        b.menage = menage;
-        b.laverie = laverie;
-        b.fibre = fibre;
-        b.assurance = assurance;
+        b.setOptions(options);
         b.setLoyerHorsCharges(loyer);
         b.setCharges(charges);
 
