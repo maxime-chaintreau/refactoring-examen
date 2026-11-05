@@ -49,6 +49,11 @@ public class Colocation extends Logement {
         return colocataires;
     }
 
+    @Override
+    public int getPlacesOccupees() {
+        return colocataires.size();
+    }
+
     public int getNombrePlaces() {
         return places;
     }

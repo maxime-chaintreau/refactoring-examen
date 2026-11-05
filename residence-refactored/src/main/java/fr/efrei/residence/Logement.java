@@ -27,6 +27,10 @@ public static final String BATIMENT_AVEC_ASCENSEUR = "A";
     public boolean isMeuble() { return meuble; }
     public Etudiant getOccupant() { return occupant; }
 
+    public int getPlacesOccupees() {
+        return occupant == null ? 0 : 1;
+    }
+
     public boolean estLibre() {
         return occupant == null;
     }
