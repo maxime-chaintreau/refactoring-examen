@@ -41,13 +41,7 @@ public class Residence {
                 System.out.println("Type inconnu ignoré : " + type);
                 continue;
             }
-            Logement l = switch (typeLu.get()) {
-                case STUDIO -> new Studio(numero, surface, etage, meuble);
-                case T1 -> new T1(numero, surface, etage, meuble);
-                case T2 -> new T2(numero, surface, etage, meuble, param);
-                case COLOCATION -> new Colocation(numero, surface, etage, meuble, param);
-            };
-            logements.add(l);
+            logements.add(FabriqueLogement.creer(typeLu.get(), numero, surface, etage, meuble, param));
         }
     }
 
