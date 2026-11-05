@@ -50,14 +50,14 @@ public class NouveauSystemeAdapter implements SystemeResidence {
     @Override
     public Optional<String> inscrire(DemandeInscription d) {
         Etudiant e = gestion.inscrireEtudiant(d.nom(), d.prenom(), d.email(), d.telephone(), d.adresse(),
-                d.profil().name(), d.echelonBourse(), d.ressourcesMensuelles(), d.pmr(), d.canalPrefere().name());
+                versProfil(d.profil()), d.echelonBourse(), d.ressourcesMensuelles(), d.pmr(), fr.efrei.residence.Canal.valueOf(d.canalPrefere().name()));
         return Optional.ofNullable(e).map(Etudiant::getId);
     }
 
     @Override
     public boolean ajouterLogement(DemandeLogement d) {
         int param = d.type() == TypeLogement.COLOCATION ? d.places() : d.surfaceBalcon();
-        return gestion.ajouterLogement(d.type().name(), d.numero(), d.surface(), d.etage(), d.meuble(), param) != null;
+        return gestion.ajouterLogement(versType(d.type()), d.numero(), d.surface(), d.etage(), d.meuble(), param) != null;
     }
 
     @Override
@@ -72,7 +72,7 @@ public class NouveauSystemeAdapter implements SystemeResidence {
         } else {
             occupants = l.estLibre() ? 0 : 1;
         }
-        return Optional.of(new EtatLogement(l.getNumero(), TypeLogement.valueOf(l.getType()), l.getNombrePlaces(),
+        return Optional.of(new EtatLogement(l.getNumero(), TypeLogement.valueOf(l.getType().name()), l.getNombrePlaces(),
                 occupants, l.estAccessiblePMR()));
     }
 
@@ -83,7 +83,7 @@ public class NouveauSystemeAdapter implements SystemeResidence {
             return OptionalDouble.empty();
         }
         Set<Option> o = d.options();
-        return OptionalDouble.of(new CalculateurLoyer().calculerLoyer(l, d.profil().name(), d.echelonBourse(),
+        return OptionalDouble.of(new CalculateurLoyer().calculerLoyer(l, versProfil(d.profil()), d.echelonBourse(),
                 o.contains(Option.PARKING), o.contains(Option.MENAGE), o.contains(Option.LAVERIE),
                 o.contains(Option.FIBRE), o.contains(Option.ASSURANCE)));
     }
@@ -95,7 +95,7 @@ public class NouveauSystemeAdapter implements SystemeResidence {
             return Optional.empty();
         }
         Set<Option> o = d.options();
-        Bail b = gestion.attribuerLogement(e, d.type().name(), o.contains(Option.PARKING), o.contains(Option.MENAGE),
+        Bail b = gestion.attribuerLogement(e, versType(d.type()), o.contains(Option.PARKING), o.contains(Option.MENAGE),
                 o.contains(Option.LAVERIE), o.contains(Option.FIBRE), o.contains(Option.ASSURANCE), d.dateSignature());
         return Optional.ofNullable(b).map(Bail::getId);
     }
@@ -106,7 +106,7 @@ public class NouveauSystemeAdapter implements SystemeResidence {
         if (b == null) {
             return Optional.empty();
         }
-        return Optional.of(new EtatBail(b.getId(), b.getLogement().getNumero(), StatutBail.valueOf(b.getStatut()),
+        return Optional.of(new EtatBail(b.getId(), b.getLogement().getNumero(), StatutBail.valueOf(b.getStatut().name()),
                 b.getLoyerHorsCharges(), b.getCharges(), b.getLoyerChargesComprises(), b.getCaution(),
                 b.getFraisDossier(), b.getDateFin(), b.soldeDu, b.cautionRestituee));
     }
@@ -164,6 +164,14 @@ public class NouveauSystemeAdapter implements SystemeResidence {
             notifications.add(new Notification(Canal.COURRIER, courrier[0], courrier[1]));
         }
         return notifications;
+    }
+
+    private static fr.efrei.residence.Profil versProfil(fr.efrei.residence.contrat.Profil p) {
+        return fr.efrei.residence.Profil.valueOf(p.name());
+    }
+
+    private static fr.efrei.residence.TypeLogement versType(TypeLogement t) {
+        return fr.efrei.residence.TypeLogement.valueOf(t.name());
     }
 
     private static Etudiant etudiant(String ref) {

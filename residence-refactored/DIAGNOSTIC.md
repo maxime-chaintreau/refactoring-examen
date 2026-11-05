@@ -1,0 +1,7 @@
+| Solid | Emplacement | Probleme |
+| --- | --- | --- |
+| Single responsibility | [GestionResidence](./src/main/java/fr/efrei/residence/GestionResidence.java)| Une seule classe fais l'inscription des étudiants la création des logements, payer le loyer, etc...|
+| Open/ closed| [Residence](./src/main/java/fr/efrei/residence/Residence.java), [CalculateurLoyer](./src/main/java/fr/efrei/residence/CalculateurLoyer.java)| Si l'on veut ajouter un nouveau type de logement il faut modifier a plusieurs endroit pour le rendre effectif|
+| Liskov subtitution| [GestionResidence](./src/main/java/fr/efrei/residence/GestionResidence.java)| Le type de logement colocation ne peut pas remplacer la classe logement dans tout les cas, c'est pourquoi il y a un instanceof dans GestionResidence|
+| Interface segregation| [ILogement](./src/main/java/fr/efrei/residence/ILogement.java), [Studii](./src/main/java/fr/efrei/residence/Studio.java)| L'interface ILogement force des métodes dont les enfants n'ont pas besoin, comme getSurfaceBalcon ou Studio throw du coup une erreur|
+| Dependency Inversion| [GestionResidence](./src/main/java/fr/efrei/residence/GestionResidence.java)| Gestion residence créer ses propres dépendeces avec par exemple: SmsService sms = new SmsService();|
