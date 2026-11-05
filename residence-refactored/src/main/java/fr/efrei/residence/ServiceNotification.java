@@ -1,17 +1,16 @@
 package fr.efrei.residence;
 
+import java.util.EnumMap;
+import java.util.Map;
+
 public class ServiceNotification {
 
     static final String PREFIXE_SUJET_ANGLAIS = "[EN] ";
 
-    private final CanalNotification email;
-    private final CanalNotification sms;
-    private final CanalNotification courrier;
+    private final Map<Canal, CanalNotification> canaux;
 
-    public ServiceNotification(CanalNotification email, CanalNotification sms, CanalNotification courrier) {
-        this.email = email;
-        this.sms = sms;
-        this.courrier = courrier;
+     public ServiceNotification(Map<Canal, CanalNotification> canaux) {
+        this.canaux = new EnumMap<>(canaux);
     }
 
     public void notifier(Etudiant e, String sujet, String message) {
@@ -19,7 +18,7 @@ public class ServiceNotification {
         canal(canal).envoyer(e, sujet, message);
         // les internationaux reçoivent toujours un email en plus (demande de l'administration)
         if (RegleProfil.pour(e.getProfil()).recoitCopieEmailEnAnglais() && canal != Canal.EMAIL) {
-            email.envoyer(e, PREFIXE_SUJET_ANGLAIS + sujet, message);
+            canal(Canal.EMAIL).envoyer(e, PREFIXE_SUJET_ANGLAIS + sujet, message);
         }
     }
 
@@ -28,10 +27,10 @@ public class ServiceNotification {
     }
 
     private CanalNotification canal(Canal canal) {
-        return switch (canal) {
-            case EMAIL -> email;
-            case SMS -> sms;
-            case COURRIER -> courrier;
-        };
+        CanalNotification c = canaux.get(canal);
+        if (c == null) {
+            throw new IllegalStateException("Aucun canal configuré pour " + canal);
+        }
+        return c;
     }
 }

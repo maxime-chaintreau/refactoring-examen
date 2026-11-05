@@ -16,6 +16,7 @@ public class CalculateurLoyer {
         if (options.contains(Option.LAVERIE)) loyer = new OptionLaverie(loyer);
         if (options.contains(Option.FIBRE) && !tarif.fibreIncluse()) loyer = new OptionFibre(loyer);
         if (options.contains(Option.ASSURANCE)) loyer = new OptionAssurance(loyer);
+        if (options.contains(Option.LOCAL_VELO)) loyer = new OptionLocalVelo(loyer); 
 
         return new RemiseProfil(loyer, RegleProfil.pour(profil).tauxRemise(echelon));
     }

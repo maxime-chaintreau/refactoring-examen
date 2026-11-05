@@ -26,6 +26,7 @@ public interface RegleProfil {
             case BOURSIER -> new RegleBoursier();
             case ALTERNANT -> new RegleAlternant();
             case INTERNATIONAL -> new RegleInternational();
+            case SPORTIF -> new RegleSportif();
         };
     }
 }

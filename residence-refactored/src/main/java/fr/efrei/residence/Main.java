@@ -2,6 +2,7 @@ package fr.efrei.residence;
 
 import java.time.LocalDate;
 import java.util.EnumSet;
+import java.util.Map;
 
 public class Main {
 
@@ -11,8 +12,12 @@ public class Main {
         EmailService email = new EmailService();
         SmsService sms = new SmsService();
         CourrierService courrier = new CourrierService();
-        ServiceNotification notifications = new ServiceNotification(
-                new NotificationEmail(email), new NotificationSms(sms), new NotificationCourrier(courrier));
+        PushService push = new PushService();
+        ServiceNotification notifications = new ServiceNotification(Map.of(
+                Canal.EMAIL, new NotificationEmail(email),
+                Canal.SMS, new NotificationSms(sms),
+                Canal.COURRIER, new NotificationCourrier(courrier),
+                Canal.PUSH, new NotificationPush(push)));
         GestionResidence gestion = new GestionResidence(
                 new ServiceInscription(db),
                 new ServiceParc(residence),

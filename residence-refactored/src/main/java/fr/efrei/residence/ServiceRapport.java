@@ -41,6 +41,7 @@ public class ServiceRapport {
         for (TypeLogement type : TypeLogement.values()) {
             int nb = places.getOrDefault(type, 0);
             int nbOccupes = placesOccupees.getOrDefault(type, 0);
+            if (nb == 0) continue;
             r += String.format(FORMAT_LIGNE_OCCUPATION, type.getLibelleRapport(), nbOccupes, nb, type.getSuffixeRapport()) + "\n";
             total += nb;
             occupes += nbOccupes;

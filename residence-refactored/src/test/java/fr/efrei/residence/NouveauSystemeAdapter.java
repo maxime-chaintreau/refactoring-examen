@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.EnumSet;
+import java.util.Map;
 
 /**
  * Branche le code historique sur les tests de contrat.
@@ -48,8 +49,11 @@ private GestionResidence gestion;
         courrier = new CourrierService();
         calculateur = new CalculateurLoyer();
         quittances = new GenerateurQuittance();
-        ServiceNotification notifications = new ServiceNotification(
-                new NotificationEmail(email), new NotificationSms(sms), new NotificationCourrier(courrier));
+        ServiceNotification notifications = new ServiceNotification(Map.of(
+            fr.efrei.residence.Canal.EMAIL, new NotificationEmail(email),
+            fr.efrei.residence.Canal.SMS, new NotificationSms(sms),
+            fr.efrei.residence.Canal.COURRIER, new NotificationCourrier(courrier),
+            fr.efrei.residence.Canal.PUSH, new NotificationPush(new PushService())));
         gestion = new GestionResidence(
                 new ServiceInscription(db),
                 new ServiceParc(residence),
