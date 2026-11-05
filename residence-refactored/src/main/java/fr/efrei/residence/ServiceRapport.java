@@ -34,10 +34,7 @@ public class ServiceRapport {
         for (Logement l : logements.tous()) {
             places.merge(l.getType(), l.getNombrePlaces(), Integer::sum);
             placesOccupees.merge(l.getType(), l.getPlacesOccupees(), Integer::sum);
-            try {
-                surfaceBalcons += l.getSurfaceBalcon();
-            } catch (UnsupportedOperationException ex) {
-            }
+            surfaceBalcons += l.getSurfaceBalcon();
         }
         int total = 0;
         int occupes = 0;

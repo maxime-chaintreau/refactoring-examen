@@ -51,12 +51,8 @@ public class ServiceAttribution {
             return null;
         }
 
-        if (choisi instanceof Colocation) {
-            choisi.ajouterColocataire(e);
-        } else {
-            choisi.loger(e);
-        }
-
+        choisi.loger(e);
+        
         compteurBail++;
         String id = String.format(FORMAT_ID_BAIL, compteurBail);
         Bail b = new Bail(id, e, choisi, dateSignature);

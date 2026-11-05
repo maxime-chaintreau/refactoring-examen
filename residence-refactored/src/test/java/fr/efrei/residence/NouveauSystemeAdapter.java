@@ -77,12 +77,7 @@ private GestionResidence gestion;
         if (l == null) {
             return Optional.empty();
         }
-        int occupants;
-        if (l instanceof Colocation) {
-            occupants = l.getColocataires().size();
-        } else {
-            occupants = l.estLibre() ? 0 : 1;
-        }
+        int occupants = l.getPlacesOccupees();
         return Optional.of(new EtatLogement(l.getNumero(), TypeLogement.valueOf(l.getType().name()), l.getNombrePlaces(),
                 occupants, l.estAccessiblePMR()));
     }

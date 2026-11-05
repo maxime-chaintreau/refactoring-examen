@@ -2,17 +2,16 @@ package fr.efrei.residence;
 
 public abstract class Logement implements ILogement {
 
-    protected String numero;
-    protected TypeLogement type;
-    protected double surface;
-    protected int etage;
-    protected boolean meuble;
-    protected Etudiant occupant;
+    protected final String numero;
+    protected final TypeLogement type;
+    protected final double surface;
+    protected final int etage;
+    protected final boolean meuble;
 
 public static final int ETAGE_REZ_DE_CHAUSSEE = 0;
 public static final String BATIMENT_AVEC_ASCENSEUR = "A";
 
-    public Logement(String numero, TypeLogement type, double surface, int etage, boolean meuble) {
+    protected Logement(String numero, TypeLogement type, double surface, int etage, boolean meuble) {
         this.numero = numero;
         this.type = type;
         this.surface = surface;
@@ -20,33 +19,23 @@ public static final String BATIMENT_AVEC_ASCENSEUR = "A";
         this.meuble = meuble;
     }
 
-    public String getNumero() { return numero; }
-    public TypeLogement getType() { return type; }
-    public double getSurface() { return surface; }
-    public int getEtage() { return etage; }
-    public boolean isMeuble() { return meuble; }
-    public Etudiant getOccupant() { return occupant; }
+    @Override public String getNumero() { return numero; }
+    @Override public TypeLogement getType() { return type; }
+    @Override public double getSurface() { return surface; }
+    @Override public int getEtage() { return etage; }
+    @Override public boolean isMeuble() { return meuble; }
 
-    public int getPlacesOccupees() {
-        return occupant == null ? 0 : 1;
-    }
-
-    public boolean estLibre() {
-        return occupant == null;
-    }
-
+    @Override
     public boolean estAccessiblePMR() {
         return etage == ETAGE_REZ_DE_CHAUSSEE || numero.startsWith(BATIMENT_AVEC_ASCENSEUR);
     }
 
-    public void loger(Etudiant e) {
-        if (occupant != null) {
-            throw new IllegalStateException("Logement " + numero + " déjà occupé");
-        }
-        occupant = e;
+    @Override
+    public double getSurfaceBalcon() {
+        return 0;
     }
 
-    public void liberer(Etudiant e) {
-        occupant = null;
+    @Override
+    public void entretienApresDepart() {
     }
 }

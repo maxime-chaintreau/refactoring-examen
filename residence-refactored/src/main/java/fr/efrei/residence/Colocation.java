@@ -1,26 +1,17 @@
 package fr.efrei.residence;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Colocation extends Logement {
 
-    private int places;
-    private List<Etudiant> colocataires = new ArrayList<Etudiant>();
+    private final int places;
+    private final List<Etudiant> colocataires = new ArrayList<>();
 
     public Colocation(String numero, double surface, int etage, boolean meuble, int places) {
         super(numero, TypeLogement.COLOCATION, surface, etage, meuble);
         this.places = places;
-    }
-
-    @Override
-    public void loger(Etudiant e) {
-        throw new UnsupportedOperationException("Utiliser ajouterColocataire() pour une colocation");
-    }
-
-    @Override
-    public void liberer(Etudiant e) {
-        throw new UnsupportedOperationException("Utiliser retirerColocataire() pour une colocation");
     }
 
     @Override
@@ -29,24 +20,21 @@ public class Colocation extends Logement {
     }
 
     @Override
-    public Etudiant getOccupant() {
-        if (colocataires.isEmpty()) return null;
-        return colocataires.get(0);
-    }
-
-    public void ajouterColocataire(Etudiant e) {
-        if (colocataires.size() >= places) {
+    public void loger(Etudiant e) {
+        if (!estLibre()) {
             throw new IllegalStateException("Colocation " + numero + " complète");
         }
         colocataires.add(e);
     }
 
-    public void retirerColocataire(Etudiant e) {
+    @Override
+    public void liberer(Etudiant e) {
         colocataires.remove(e);
     }
 
-    public List<Etudiant> getColocataires() {
-        return colocataires;
+    @Override
+    public int getNombrePlaces() {
+        return places;
     }
 
     @Override
@@ -54,15 +42,12 @@ public class Colocation extends Logement {
         return colocataires.size();
     }
 
-    public int getNombrePlaces() {
-        return places;
+    public List<Etudiant> getColocataires() {
+        return Collections.unmodifiableList(colocataires);
     }
 
-    public double getSurfaceBalcon() {
-        throw new UnsupportedOperationException("Les colocations n'ont pas de balcon");
-    }
-
-    public void nettoyerPartiesCommunes() {
+    @Override
+    public void entretienApresDepart() {
         System.out.println("[ENTRETIEN] Nettoyage des parties communes de la colocation " + numero);
     }
 }
